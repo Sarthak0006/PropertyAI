@@ -1,0 +1,24 @@
+{
+  "name": "worker-service",
+  "version": "1.0.0",
+  "description": "Background queue workers for the Real Estate platform",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "^8.12.0",
+    "bullmq": "^5.4.0",
+    "dotenv": "^16.4.5",
+    "ioredis": "^5.3.2",
+    "pino": "^8.19.0",
+    "pino-pretty": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}

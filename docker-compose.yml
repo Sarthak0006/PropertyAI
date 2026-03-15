@@ -1,0 +1,178 @@
+version: '3.8'
+
+services:
+  # ── Elasticsearch ──────────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: re-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  # ── MongoDB ────────────────────────────────────────
+  mongodb:
+    image: mongo:latest
+    container_name: re-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # ── Redis ──────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: re-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+
+  # ── AI Agent (Python/FastAPI) ──────────────────────
+  ai-agent:
+    build: ./ai-agent
+    container_name: re-ai-agent
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+  # ── Backend (Node.js/Express) ──────────────────────
+  backend:
+    build: ./backend
+    container_name: re-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - BACKEND_PORT=3001
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_INDEX=properties
+      - REDIS_URL=redis://redis:6379
+      - AI_AGENT_URL=http://ai-agent:8000
+      - MONGODB_URI=mongodb://mongodb:27017/realestate
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      ai-agent:
+        condition: service_started
+    networks:
+      - app-network
+
+  # ── Worker Service ─────────────────────────────────
+  worker-service:
+    build: ./worker-service
+    container_name: re-worker
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_INDEX=properties
+      - DATA_DIR=/app/data
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # ── Search Indexer (one-shot) ──────────────────────
+  search-indexer:
+    build: ./search-indexer
+    container_name: re-indexer
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_INDEX=properties
+      - DATA_DIR=/app/data
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data:ro
+    networks:
+      - app-network
+
+  # ── Frontend (React/Vite) ──────────────────────────
+  frontend:
+    build: ./frontend
+    container_name: re-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  # ── Prometheus ─────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.49.0
+    container_name: re-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - app-network
+
+  # ── Grafana ────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.3.1
+    container_name: re-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
+volumes:
+  es_data:
+  mongodb_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  app-network:
+    driver: bridge

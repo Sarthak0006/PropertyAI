@@ -1,0 +1,23 @@
+{
+  "name": "search-indexer",
+  "version": "1.0.0",
+  "description": "Data ingestion pipeline for Elasticsearch",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "^8.12.0",
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^16.4.5",
+    "pino": "^8.19.0",
+    "pino-pretty": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}
