@@ -161,9 +161,10 @@ export default function HomePage() {
   // ── Speech Recognition ──
   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
   const recognitionRef = useRef<any>(null);
+  const API_BASE = import.meta.env.VITE_API_URL || '/api/v1';
 
   useEffect(() => {
-    fetch(`http://localhost:3001/api/v1/chat/history/${sessionId}`)
+    fetch(`${API_BASE}/chat/history/${sessionId}`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data?.messages && data.data.messages.length > 0) {
@@ -254,7 +255,8 @@ export default function HomePage() {
 
     // ── AI Stream starts ──
     try {
-      const response = await fetch('http://localhost:3001/api/v1/chat/stream', {
+      const API_BASE = import.meta.env.VITE_API_URL || '/api/v1';
+      const response = await fetch(`${API_BASE}/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
         body: JSON.stringify({ sessionId, message: text }),

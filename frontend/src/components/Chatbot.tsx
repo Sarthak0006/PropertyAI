@@ -25,9 +25,11 @@ export function Chatbot() {
   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
   const recognitionRef = useRef<any>(null);
 
+  const API_BASE = import.meta.env.VITE_API_URL || '/api/v1';
+
   useEffect(() => {
     // Load history from MongoDB via backend
-    fetch(`http://localhost:3001/api/v1/chat/history/${sessionId}`)
+    fetch(`${API_BASE}/chat/history/${sessionId}`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data?.messages) {
@@ -109,7 +111,7 @@ export function Chatbot() {
     setMessages(prev => [...prev, { role: 'assistant', content: '', isStreaming: true }]);
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/chat/stream', {
+      const response = await fetch(`${API_BASE}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
