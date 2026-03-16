@@ -314,12 +314,12 @@ export default function HomePage() {
   };
 
   const preDefinedPrompts = [
-    "3 bedroom house under $1M",
-    "Luxury properties with pool",
-    "Smart-home apartments",
-    "Villas with ocean views",
-    "Affordable studios downtown",
-    "Family homes with garage",
+    "Show me houses with 3 bedrooms",
+    "Find homes that have 2 bathrooms",
+    "Show properties that include a gym",
+    "Find houses with a fitness center",
+    "Show homes that have a backyard",
+    "List properties with outdoor backyard space"
   ];
 
   const hasSearched = activeQuery.length > 0 || messages.length > 0;
