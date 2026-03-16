@@ -334,7 +334,7 @@ export default function HomePage() {
   // ── RENDER ──
   // ════════════════════════════════════════════════════════════
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-gray-950 transition-colors">
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-gray-50 dark:bg-gray-950 transition-colors overflow-hidden">
 
       {!hasSearched ? (
         /* ═══════════ INITIAL STATE: Hero + Centered Search + Grid ═══════════ */
@@ -404,9 +404,9 @@ export default function HomePage() {
       ) : (
         /* ═══════════ SPLIT-PANEL: Chat Left + Cards Right ═══════════ */
         <>
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
             {/* ── LEFT PANEL: AI Chat ── */}
-            <div className="w-full lg:w-[420px] xl:w-[480px] shrink-0 flex flex-col border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 animate-slide-in-left">
+            <div className="w-full lg:w-[420px] xl:w-[480px] shrink-0 flex flex-col border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 animate-slide-in-left h-[60vh] lg:h-full min-h-0">
               {/* Chat Header */}
               <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
                 <button
@@ -426,7 +426,7 @@ export default function HomePage() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
                 {messages.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[90%] px-4 py-3 text-sm leading-relaxed rounded-2xl ${msg.role === 'user'
@@ -439,15 +439,35 @@ export default function HomePage() {
                   </div>
                 ))}
 
-                {/* Typing indicator */}
+                {/* AI Thinking Loader */}
                 {isTyping && messages[messages.length - 1]?.role === 'user' && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl rounded-bl-sm px-4 py-3 border border-gray-100 dark:border-gray-800 flex items-center gap-2 text-gray-400 text-sm">
-                      <span>Analyzing</span>
-                      <div className="flex gap-1">
-                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl rounded-bl-sm px-5 py-4 border border-gray-200/60 dark:border-gray-700/60 shadow-sm max-w-[280px] w-full">
+                      {/* Orb + Text Row */}
+                      <div className="flex items-center gap-3 mb-3">
+                        {/* Pulsing Gradient Orb */}
+                        <div className="relative w-9 h-9 shrink-0">
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 ai-orb" />
+                          <div className="absolute inset-[-3px] rounded-full border-2 border-transparent border-t-blue-400 border-r-indigo-400 ai-ring" />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Sparkles className="w-4 h-4 text-white drop-shadow" />
+                          </div>
+                        </div>
+                        {/* Shimmer Text */}
+                        <div>
+                          <p className="text-sm font-semibold shimmer-text">Thinking...</p>
+                          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">Analyzing your query</p>
+                        </div>
+                      </div>
+                      {/* Wave Bars */}
+                      <div className="flex items-end gap-[3px] h-5 px-1">
+                        {[0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.5, 0.35, 0.2].map((delay, i) => (
+                          <div
+                            key={i}
+                            className="w-[3px] rounded-full bg-gradient-to-t from-blue-500 to-indigo-400 wave-bar"
+                            style={{ animationDelay: `${delay}s` }}
+                          />
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -456,7 +476,7 @@ export default function HomePage() {
               </div>
 
               {/* Quick re-search chips */}
-              <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+              {/* <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {preDefinedPrompts.slice(0, 3).map((p, i) => (
                     <button
@@ -469,7 +489,7 @@ export default function HomePage() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
               {/* Search Bar pinned at bottom of left panel */}
               <div className="px-3 py-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
@@ -478,7 +498,7 @@ export default function HomePage() {
             </div>
 
             {/* ── RIGHT PANEL: Elasticsearch Search Results ── */}
-            <div className="hidden lg:flex flex-1 flex-col overflow-y-auto bg-gray-50 dark:bg-gray-900/50 animate-slide-in-right">
+            <div className="flex flex-1 flex-col overflow-y-auto bg-gray-50 dark:bg-gray-900/50 animate-slide-in-right min-h-0">
               <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-white/60 dark:bg-gray-950/60 backdrop-blur-sm sticky top-0 z-10 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
@@ -521,28 +541,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Mobile: horizontal card scroll at bottom */}
-            {searchResults.length > 0 && (
-              <div className="lg:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 p-3 z-40">
-                <div className="flex overflow-x-auto gap-3 snap-x scrollbar-hide">
-                  {searchResults.map(p => (
-                    <div key={p.id} className="w-56 shrink-0 snap-start">
-                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <img
-                          src={p.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80'}
-                          alt={p.title}
-                          className="w-full h-24 object-cover"
-                        />
-                        <div className="p-2">
-                          <p className="font-bold text-sm text-gray-900 dark:text-white">${p.price?.toLocaleString()}</p>
-                          <p className="text-xs text-gray-500 truncate">{p.title}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </div>
         </>
       )}
